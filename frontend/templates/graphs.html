@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}Graphs & Analytics - Student Performance Predictor{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="border-bottom pb-3 mb-4">
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="badge bg-primary">Visual Analytics</span>
+            <span class="text-muted small">Real Data Visualizations</span>
+        </div>
+        <h2 class="fw-bold mb-1"><i class="bi bi-graph-up-arrow text-primary me-2"></i>Performance Graphs & Model Diagnostics</h2>
+        <p class="text-muted small mb-0">
+            Real visualizations generated from Amr Maree's verified Kaggle dataset and our trained supervised machine learning evaluation.
+        </p>
+    </div>
+
+    <!-- Section 1: Interactive Live Database Analytics -->
+    <div class="mb-5">
+        <h4 class="fw-bold mb-3 text-dark"><i class="bi bi-pie-chart-fill me-2 text-primary"></i>Live Application Analytics</h4>
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                    <h6 class="fw-bold mb-1">Pass vs Fail Outcome Ratio</h6>
+                    <p class="small text-muted mb-3">Live distribution of predictions across passing and failing thresholds.</p>
+                    <div style="max-height: 260px;" class="d-flex justify-content-center">
+                        <canvas id="passFailPieChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                    <h6 class="fw-bold mb-1">Performance Category Breakdown</h6>
+                    <p class="small text-muted mb-3">Submissions grouped into qualitative achievement bands.</p>
+                    <div style="max-height: 260px;" class="d-flex justify-content-center">
+                        <canvas id="categoryBarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 2: Machine Learning Evaluation & Dataset Insights -->
+    <div class="mb-5">
+        <h4 class="fw-bold mb-3 text-dark"><i class="bi bi-cpu-fill me-2 text-primary"></i>Dataset & Model Evaluation Diagnostics</h4>
+        <div class="row g-4">
+            <!-- 1. Score Distribution -->
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold mb-1 text-primary">1. Distribution of Final Exam Scores</h6>
+                        <p class="small text-muted mb-3">
+                            Histogram of marks showing the verified 60-mark pass cutoff dividing passing and failing cohorts.
+                        </p>
+                        <div class="chart-img-container">
+                            <img src="{{ url_for('static', filename='images/score_distribution.png') }}" alt="Score Distribution">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Correlation Heatmap -->
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold mb-1 text-primary">2. Numerical Features Correlation Heatmap</h6>
+                        <p class="small text-muted mb-3">
+                            Pearson correlation coefficients: Past Exam Scores (+0.49) and Attendance (+0.46) demonstrate highest target linkage.
+                        </p>
+                        <div class="chart-img-container">
+                            <img src="{{ url_for('static', filename='images/correlation_heatmap.png') }}" alt="Correlation Heatmap">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Feature Importance -->
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold mb-1 text-primary">3. Mutual Information & Feature Selection</h6>
+                        <p class="small text-muted mb-3">
+                            Dark blue bars highlight the 5 selected features, justifying the exclusion of non-informative variables like Gender.
+                        </p>
+                        <div class="chart-img-container">
+                            <img src="{{ url_for('static', filename='images/feature_importance.png') }}" alt="Feature Importance">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Attendance vs Score -->
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold mb-1 text-primary">4. Attendance Rate vs Final Exam Score</h6>
+                        <p class="small text-muted mb-3">
+                            Scatter plot confirming students maintaining &gt;80% attendance consistently cluster in passing brackets.
+                        </p>
+                        <div class="chart-img-container">
+                            <img src="{{ url_for('static', filename='images/attendance_vs_score.png') }}" alt="Attendance vs Score">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. Actual vs Predicted Regression -->
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold mb-1 text-primary">5. Actual vs Predicted Regression Fit</h6>
+                        <p class="small text-muted mb-3">
+                            Holdout test evaluation showing model predicted marks closely tracking actual exam marks along the ideal 1:1 diagonal.
+                        </p>
+                        <div class="chart-img-container">
+                            <img src="{{ url_for('static', filename='images/actual_vs_predicted.png') }}" alt="Actual vs Predicted">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. Confusion Matrix -->
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold mb-1 text-primary">6. Classification Confusion Matrix</h6>
+                        <p class="small text-muted mb-3">
+                            True positive, true negative, false positive, and false negative counts for binary Pass/Fail prediction.
+                        </p>
+                        <div class="chart-img-container">
+                            <img src="{{ url_for('static', filename='images/confusion_matrix.png') }}" alt="Confusion Matrix">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

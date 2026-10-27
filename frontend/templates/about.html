@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}About Project - Student Performance Predictor{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="border-bottom pb-3 mb-4">
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="badge bg-primary">Project Documentation</span>
+            <span class="text-muted small">B.Tech CSE Academic Mini-Project</span>
+        </div>
+        <h2 class="fw-bold mb-1"><i class="bi bi-info-circle text-primary me-2"></i>About the Project & System Architecture</h2>
+        <p class="text-muted small mb-0">
+            Comprehensive technical report detailing problem domain, Kaggle dataset validation, machine learning formulation, and engineering stack.
+        </p>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Documentation Body -->
+        <div class="col-lg-8">
+            <!-- 1. Introduction & Abstract -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                <h4 class="fw-bold text-dark border-bottom pb-2 mb-3">1. Executive Summary & Abstract</h4>
+                <p class="text-muted">
+                    Early identification of at-risk students and accurate forecasting of academic outcomes are fundamental pillars of modern educational informatics. The <strong>Student Performance Predictor</strong> is an end-to-end, production-oriented web system that utilizes supervised machine learning algorithms to forecast final examination scores, determine pass/fail outcomes, and recommend proactive academic interventions.
+                </p>
+                <p class="text-muted mb-0">
+                    Engineered with Python Flask, MySQL, and scikit-learn, the application strictly adheres to rigorous data science principles: avoiding target leakage, systematically handling duplicates, and reducing feature dimensionality to strictly <strong>5 core input features</strong>.
+                </p>
+            </div>
+
+            <!-- 2. Problem Statement & Objectives -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                <h4 class="fw-bold text-dark border-bottom pb-2 mb-3">2. Problem Statement & Project Objectives</h4>
+                <h6 class="fw-bold text-primary">Problem Statement:</h6>
+                <p class="text-muted">
+                    Traditional educational evaluation systems evaluate student outcomes only after final exams take place, offering zero opportunity for corrective remediation. Furthermore, generic predictive systems often suffer from high dimensionality, demanding dozens of obscure student parameters that are unattainable during semester sessions.
+                </p>
+
+                <h6 class="fw-bold text-primary mt-3">Key Project Objectives:</h6>
+                <ul class="text-muted mb-0">
+                    <li>Analyze and validate the official Amr Maree Kaggle student dataset without synthetic fabrication.</li>
+                    <li>Perform mathematical feature selection to identify exactly 5 easily measurable input features.</li>
+                    <li>Train and validate supervised regression and classification models to generate continuous marks and binary status.</li>
+                    <li>Design a normalized MySQL relational schema with user role-based access control (Admin & Student).</li>
+                    <li>Develop a responsive, professional Bootstrap 5 user interface featuring interactive analytical charts.</li>
+                </ul>
+            </div>
+
+            <!-- 3. Kaggle Dataset Specification -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                <h4 class="fw-bold text-dark border-bottom pb-2 mb-3">3. Dataset Provenance & Validation</h4>
+                <p class="text-muted">
+                    The project strictly uses the dataset provided by Amr Maree on Kaggle:
+                </p>
+                <div class="p-3 bg-light rounded-3 border mb-3">
+                    <div class="fw-bold text-dark"><i class="bi bi-link-45deg me-1"></i>Official Kaggle Repository:</div>
+                    <a href="https://www.kaggle.com/datasets/amrmaree/student-performance-prediction" target="_blank" rel="noopener" class="text-break small">
+                        https://www.kaggle.com/datasets/amrmaree/student-performance-prediction
+                    </a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm small text-muted">
+                        <thead class="table-light">
+                            <tr><th>Attribute</th><th>Specification</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Total Observations</td><td>708 raw records (500 unique students)</td></tr>
+                            <tr><td>Total Columns</td><td>10 columns (1 ID, 1 demographic, 6 features, 2 targets)</td></tr>
+                            <tr><td>Missing Values</td><td>0 (100% complete dataset)</td></tr>
+                            <tr><td>Target 1 (Regression)</td><td><code>Final_Exam_Score</code> (Range: 50 to 77 marks)</td></tr>
+                            <tr><td>Target 2 (Classification)</td><td><code>Pass_Fail</code> (354 Pass, 354 Fail; Cutoff = 60 Marks)</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 4. Feature Selection Justification -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                <h4 class="fw-bold text-dark border-bottom pb-2 mb-3">4. Feature Selection & Leakage Prevention</h4>
+                <p class="text-muted">
+                    By evaluating Pearson correlation and Mutual Information rankings, 5 critical features were selected for the production pipeline:
+                </p>
+                <ol class="text-muted mb-3">
+                    <li><strong>Study Hours per Week:</strong> Direct indicator of student study time outside lectures ($MI = 0.397$).</li>
+                    <li><strong>Attendance Rate:</strong> Top mutual information predictor ($MI = 0.685$), capturing daily lecture consistency.</li>
+                    <li><strong>Past Exam Scores:</strong> Strongest linear correlation ($r = +0.490$), reflecting prior academic aptitude.</li>
+                    <li><strong>Parental Education Level:</strong> Categorical proxy for socio-academic support and structure.</li>
+                    <li><strong>Extracurricular Activities:</strong> Binary measure of balanced time management and stress resilience.</li>
+                </ol>
+                <p class="text-muted small mb-0">
+                    <i class="bi bi-info-circle-fill text-primary me-1"></i>
+                    <strong>Excluded Variables:</strong> <code>Student_ID</code> was discarded to avoid overfitting on arbitrary keys; <code>Gender</code> was excluded to prevent demographic bias ($MI = 0.0028$); and target variables were strictly shielded from input features to prevent target leakage.
+                </p>
+            </div>
+
+            <!-- 5. System Architecture -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                <h4 class="fw-bold text-dark border-bottom pb-2 mb-3">5. Software Architecture & Design</h4>
+                <div class="row g-3 text-center">
+                    <div class="col-md-3 col-6">
+                        <div class="p-3 bg-light rounded-3 border">
+                            <i class="bi bi-filetype-py fs-2 text-primary"></i>
+                            <div class="fw-bold small mt-1">Python Flask</div>
+                            <small class="text-muted">Backend Service</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="p-3 bg-light rounded-3 border">
+                            <i class="bi bi-database-fill fs-2 text-success"></i>
+                            <div class="fw-bold small mt-1">MySQL + ORM</div>
+                            <small class="text-muted">Data Persistence</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="p-3 bg-light rounded-3 border">
+                            <i class="bi bi-gear-wide-connected fs-2 text-warning"></i>
+                            <div class="fw-bold small mt-1">scikit-learn</div>
+                            <small class="text-muted">ML Pipelines</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="p-3 bg-light rounded-3 border">
+                            <i class="bi bi-bootstrap-fill fs-2 text-danger"></i>
+                            <div class="fw-bold small mt-1">Bootstrap 5</div>
+                            <small class="text-muted">Responsive UI</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. Limitations & Future Scope -->
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <h4 class="fw-bold text-dark border-bottom pb-2 mb-3">6. Limitations & Future Roadmap</h4>
+                <ul class="text-muted small mb-0">
+                    <li class="mb-2"><strong>Model Nature:</strong> Predictions represent statistical estimations based on historical cohort patterns; they do not dictate individual student potential.</li>
+                    <li class="mb-2"><strong>Unobserved Variables:</strong> Psychological factors, health conditions, and faculty teaching methodologies are unrecorded in this dataset.</li>
+                    <li><strong>Future Scope:</strong> Integration of automated early-warning email alerts to academic advisors when predicted marks fall below 60.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Sidebar Specifications -->
+        <div class="col-lg-4">
+            <!-- Hardware & Software Specs Card -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                <h5 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                    <i class="bi bi-pc-display me-2 text-primary"></i>Technical Specifications
+                </h5>
+                <h6 class="fw-bold small text-muted text-uppercase">Software Requirements</h6>
+                <ul class="list-unstyled small text-muted mb-3">
+                    <li><i class="bi bi-check2 text-success me-1"></i> Python 3.10+ / 3.13</li>
+                    <li><i class="bi bi-check2 text-success me-1"></i> Flask 3.0+</li>
+                    <li><i class="bi bi-check2 text-success me-1"></i> Flask-SQLAlchemy & PyMySQL</li>
+                    <li><i class="bi bi-check2 text-success me-1"></i> scikit-learn, pandas, numpy</li>
+                    <li><i class="bi bi-check2 text-success me-1"></i> MySQL 8.0 / MariaDB</li>
+                </ul>
+
+                <h6 class="fw-bold small text-muted text-uppercase">Hardware Requirements</h6>
+                <ul class="list-unstyled small text-muted mb-0">
+                    <li><i class="bi bi-check2 text-success me-1"></i> Intel Core i3 / AMD Ryzen 3 or higher</li>
+                    <li><i class="bi bi-check2 text-success me-1"></i> 4 GB RAM minimum</li>
+                    <li><i class="bi bi-check2 text-success me-1"></i> 500 MB Free Disk Space</li>
+                </ul>
+            </div>
+
+            <!-- Live Model Metrics Card -->
+            {% if model_meta %}
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <h5 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                    <i class="bi bi-clipboard2-check me-2 text-success"></i>Trained Model Verification
+                </h5>
+                <table class="table table-sm small mb-0">
+                    <tbody>
+                        <tr>
+                            <td class="text-muted">Active Regressor</td>
+                            <td class="fw-bold text-end">{{ model_meta.selected_regressor.model_name }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Mean Absolute Error</td>
+                            <td class="fw-bold text-end text-primary">{{ model_meta.selected_regressor.metrics.mae }} marks</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Root Mean Squared Error</td>
+                            <td class="fw-bold text-end text-primary">{{ model_meta.selected_regressor.metrics.rmse }} marks</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Active Classifier</td>
+                            <td class="fw-bold text-end">{{ model_meta.selected_classifier.model_name }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Classification Accuracy</td>
+                            <td class="fw-bold text-end text-success">{{ (model_meta.selected_classifier.metrics.accuracy * 100)|round(1) }}%</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">F1-Score</td>
+                            <td class="fw-bold text-end text-success">{{ model_meta.selected_classifier.metrics.f1_score }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Pass Mark Cutoff</td>
+                            <td class="fw-bold text-end">&ge; {{ model_meta.pass_threshold }} Marks</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

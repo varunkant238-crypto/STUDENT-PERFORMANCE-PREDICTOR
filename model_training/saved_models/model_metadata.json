@@ -1,0 +1,96 @@
+{
+    "training_timestamp": "2026-10-27T00:00:13.256042",
+    "dataset_total_samples": 500,
+    "deduplicated_samples": 500,
+    "train_samples": 400,
+    "test_samples": 100,
+    "selected_features": [
+        "Study_Hours_per_Week",
+        "Attendance_Rate",
+        "Past_Exam_Scores",
+        "Parental_Education_Level",
+        "Extracurricular_Activities"
+    ],
+    "numerical_features": [
+        "Study_Hours_per_Week",
+        "Attendance_Rate",
+        "Past_Exam_Scores"
+    ],
+    "categorical_features": [
+        "Parental_Education_Level",
+        "Extracurricular_Activities"
+    ],
+    "pass_threshold": 60.0,
+    "selected_regressor": {
+        "model_name": "Gradient Boosting Regressor",
+        "metrics": {
+            "mae": 3.5,
+            "rmse": 4.534,
+            "r2": 0.458
+        }
+    },
+    "all_regressors": {
+        "Linear Regression": {
+            "mae": 3.589,
+            "rmse": 4.431,
+            "r2": 0.482
+        },
+        "Ridge Regression": {
+            "mae": 3.587,
+            "rmse": 4.43,
+            "r2": 0.482
+        },
+        "Random Forest Regressor": {
+            "mae": 3.546,
+            "rmse": 4.601,
+            "r2": 0.442
+        },
+        "Gradient Boosting Regressor": {
+            "mae": 3.5,
+            "rmse": 4.534,
+            "r2": 0.458
+        }
+    },
+    "selected_classifier": {
+        "model_name": "Logistic Regression",
+        "metrics": {
+            "accuracy": 0.76,
+            "precision": 0.5806,
+            "recall": 0.6207,
+            "f1_score": 0.6
+        },
+        "confusion_matrix": [
+            [
+                58,
+                13
+            ],
+            [
+                11,
+                18
+            ]
+        ]
+    },
+    "all_classifiers": {
+        "Logistic Regression": {
+            "accuracy": 0.76,
+            "precision": 0.5806,
+            "recall": 0.6207,
+            "f1_score": 0.6
+        },
+        "Random Forest Classifier": {
+            "accuracy": 0.74,
+            "precision": 0.5714,
+            "recall": 0.4138,
+            "f1_score": 0.48
+        }
+    },
+    "feature_importances": {
+        "Study_Hours_per_Week": 0.2478,
+        "Attendance_Rate": 0.3768,
+        "Past_Exam_Scores": 0.3522,
+        "Parental_Education_Level_High School": 0.0023,
+        "Parental_Education_Level_Masters": 0.0016,
+        "Parental_Education_Level_PhD": 0.0108,
+        "Extracurricular_Activities_Yes": 0.0085
+    }
+}

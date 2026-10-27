@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block title %}Student Prediction - Student Performance Predictor{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="border-bottom pb-3 mb-4">
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="badge bg-primary">Inference Engine</span>
+            <span class="text-muted small">5-Feature Supervised Model</span>
+        </div>
+        <h2 class="fw-bold mb-1"><i class="bi bi-cpu-fill text-primary me-2"></i>Student Performance Prediction Form</h2>
+        <p class="text-muted small mb-0">
+            Enter the 5 validated academic and demographic parameters to compute estimated final marks, pass/fail status, and targeted recommendations.
+        </p>
+    </div>
+
+    <!-- Error message banner if any -->
+    {% if error_message %}
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm mb-4" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        <strong>Validation Error:</strong> {{ error_message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+
+    <div class="row g-4">
+        <!-- Prediction Input Form -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <h5 class="fw-bold mb-3 text-dark border-bottom pb-2">
+                    <i class="bi bi-pencil-square me-2 text-primary"></i>Student Input Parameters
+                </h5>
+
+                <form method="POST" action="{{ url_for('main.predict') }}" novalidate>
+                    <!-- Student Identifier -->
+                    <div class="mb-3">
+                        <label for="student_code" class="form-label fw-semibold small">Student Code / ID</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-person-badge"></i></span>
+                            <input type="text" class="form-control" id="student_code" name="student_code" 
+                                   placeholder="e.g. S147 or STU-001" 
+                                   value="{{ form_values.get('student_code', user.student_code or 'S147') }}" required>
+                        </div>
+                        <div class="form-text">Used to catalog prediction in the institution records.</div>
+                    </div>
+
+                    <div class="row g-3">
+                        <!-- 1. Study Hours -->
+                        <div class="col-md-6">
+                            <label for="study_hours" class="form-label fw-semibold small">
+                                1. Study Hours per Week <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-clock"></i></span>
+                                <input type="number" class="form-control" id="study_hours" name="study_hours" 
+                                       min="0" max="100" step="1" 
+                                       value="{{ form_values.get('Study_Hours_per_Week', '25') }}" required>
+                                <span class="input-group-text bg-light">hrs/wk</span>
+                            </div>
+                            <div class="form-text">Self-study duration (0–100 hrs/wk).</div>
+                        </div>
+
+                        <!-- 2. Attendance Rate -->
+                        <div class="col-md-6">
+                            <label for="attendance_rate" class="form-label fw-semibold small">
+                                2. Attendance Rate (%) <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-calendar-check"></i></span>
+                                <input type="number" class="form-control" id="attendance_rate" name="attendance_rate" 
+                                       min="0" max="100" step="0.5" 
+                                       value="{{ form_values.get('Attendance_Rate', '80.0') }}" required>
+                                <span class="input-group-text bg-light">%</span>
+                            </div>
+                            <div class="form-text">Lecture presence (0–100%).</div>
+                        </div>
+
+                        <!-- 3. Past Exam Scores -->
+                        <div class="col-md-6">
+                            <label for="past_scores" class="form-label fw-semibold small">
+                                3. Past Exam Scores <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-journal-text"></i></span>
+                                <input type="number" class="form-control" id="past_scores" name="past_scores" 
+                                       min="0" max="100" step="1" 
+                                       value="{{ form_values.get('Past_Exam_Scores', '75') }}" required>
+                                <span class="input-group-text bg-light">Marks</span>
+                            </div>
+                            <div class="form-text">Historical benchmark marks (0–100).</div>
+                        </div>
+
+                        <!-- 4. Parental Education Level -->
+                        <div class="col-md-6">
+                            <label for="parental_education" class="form-label fw-semibold small">
+                                4. Parental Education <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-people"></i></span>
+                                <select class="form-select" id="parental_education" name="parental_education" required>
+                                    {% for opt in constraints.Parental_Education_Level.allowed %}
+                                    <option value="{{ opt }}" {% if form_values.get('Parental_Education_Level', 'Bachelors') == opt %}selected{% endif %}>
+                                        {{ opt }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-text">Highest academic attainment of parents.</div>
+                        </div>
+
+                        <!-- 5. Extracurricular Activities -->
+                        <div class="col-12">
+                            <label class="form-label fw-semibold small d-block">
+                                5. Extracurricular Activities Participation <span class="text-danger">*</span>
+                            </label>
+                            <div class="d-flex gap-4 p-2 bg-light rounded-3 border">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="extracurricular" id="extra_yes" value="Yes"
+                                           {% if form_values.get('Extracurricular_Activities') == 'Yes' %}checked{% endif %}>
+                                    <label class="form-check-label fw-medium" for="extra_yes">
+                                        <i class="bi bi-check-circle text-success me-1"></i> Yes (Active in sports / clubs)
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="extracurricular" id="extra_no" value="No"
+                                           {% if form_values.get('Extracurricular_Activities', 'No') == 'No' %}checked{% endif %}>
+                                    <label class="form-check-label fw-medium" for="extra_no">
+                                        <i class="bi bi-x-circle text-danger me-1"></i> No (Focus exclusively on academics)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="mt-4 pt-2">
+                        <button type="submit" class="btn btn-primary btn-lg w-100 fw-semibold shadow-sm">
+                            <i class="bi bi-lightning-charge-fill me-2"></i> Compute Performance Prediction
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Prediction Result Output Column -->
+        <div class="col-lg-5">
+            {% if result %}
+            <div class="result-card mb-4">
+                <div class="{% if result.pass_fail == 'Pass' %}result-header-pass{% else %}result-header-fail{% endif %} text-center">
+                    <div class="text-uppercase small fw-bold tracking-wide mb-1 opacity-75">
+                        Predicted Academic Status
+                    </div>
+                    <div class="score-display mb-1">
+                        {{ result.predicted_score }} <span class="fs-4 fw-normal opacity-75">/ 100</span>
+                    </div>
+                    <div class="d-inline-flex align-items-center gap-2 bg-white bg-opacity-25 px-3 py-1 rounded-pill">
+                        <i class="bi {% if result.pass_fail == 'Pass' %}bi-check-circle-fill{% else %}bi-x-circle-fill{% endif %}"></i>
+                        <strong class="fs-5">{{ result.pass_fail }}</strong>
+                    </div>
+                </div>
+
+                <div class="p-4">
+                    <!-- Category Badge -->
+                    <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded-3 mb-3 border">
+                        <div>
+                            <small class="text-muted text-uppercase fw-semibold d-block">Performance Tier</small>
+                            <span class="fw-bold text-dark fs-6">{{ result.performance_category }}</span>
+                        </div>
+                        <span class="badge {% if result.pass_fail == 'Pass' %}bg-success{% else %}bg-danger{% endif %} fs-6">
+                            Pass Cutoff: &ge; 60 Marks
+                        </span>
+                    </div>
+
+                    <!-- Pass Probability Meter -->
+                    {% if result.pass_probability is not none %}
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between small fw-semibold mb-1">
+                            <span>Estimated Pass Confidence:</span>
+                            <span class="{% if result.pass_probability >= 60 %}text-success{% else %}text-danger{% endif %}">
+                                {{ result.pass_probability }}%
+                            </span>
+                        </div>
+                        <div class="progress" style="height: 10px;">
+                            <div class="progress-bar {% if result.pass_probability >= 60 %}bg-success{% else %}bg-danger{% endif %}" 
+                                 role="progressbar" 
+                                 style="width: {{ result.pass_probability }}%;" 
+                                 aria-valuenow="{{ result.pass_probability }}" aria-valuemin="0" aria-valuemax="100">
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Constructive Recommendations -->
+                    <h6 class="fw-bold mb-2 text-dark"><i class="bi bi-lightbulb-fill text-warning me-2"></i>Actionable Recommendations</h6>
+                    <ul class="list-group list-group-flush small mb-3">
+                        {% for rec in result.recommendations %}
+                        <li class="list-group-item px-0 text-muted">
+                            <i class="bi bi-arrow-right-short text-primary fs-5 align-middle"></i> {{ rec }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('main.student_records') }}" class="btn btn-outline-primary btn-sm w-100">
+                            <i class="bi bi-journal-text me-1"></i> View Saved Records
+                        </a>
+                        <a href="{{ url_for('main.predict') }}" class="btn btn-light btn-sm w-100 border">
+                            <i class="bi bi-arrow-clockwise me-1"></i> Reset Form
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <!-- Placeholder Card before Prediction is calculated -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 text-center h-100 d-flex flex-column justify-content-center bg-white">
+                <div class="display-3 text-muted opacity-50 mb-3">
+                    <i class="bi bi-clipboard2-data"></i>
+                </div>
+                <h5 class="fw-bold text-dark">Ready for Prediction</h5>
+                <p class="text-muted small mb-4">
+                    Fill out the 5 input parameters on the left and click <strong>Compute Performance Prediction</strong> to view final grade forecasts and pass/fail assessments.
+                </p>
+                <div class="p-3 bg-light rounded-3 text-start small border">
+                    <div class="fw-semibold text-primary mb-1"><i class="bi bi-shield-check me-1"></i> Transparent AI Pipeline:</div>
+                    <div class="text-muted">
+                        All predictions run through a trained supervised regression model with strict feature alignment and no target leakage.
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

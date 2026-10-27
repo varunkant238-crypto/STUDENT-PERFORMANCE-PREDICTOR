@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Student Performance Predictor{% endblock %} - College AI Analytics</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5.3 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+    <!-- Top Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('main.home') }}">
+                <span class="bg-primary text-white p-2 rounded-3 me-2 d-inline-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                    <i class="bi bi-mortarboard-fill"></i>
+                </span>
+                <span>EduPredict <small class="text-muted fw-normal fs-6">AI</small></span>
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'main.home' %}active{% endif %}" href="{{ url_for('main.home') }}">
+                            <i class="bi bi-house-door me-1"></i> Home
+                        </a>
+                    </li>
+                    {% if current_user %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}" href="{{ url_for('main.dashboard') }}">
+                            <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'main.predict' %}active{% endif %}" href="{{ url_for('main.predict') }}">
+                            <i class="bi bi-cpu me-1"></i> Student Prediction
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'main.student_records' %}active{% endif %}" href="{{ url_for('main.student_records') }}">
+                            <i class="bi bi-journal-text me-1"></i> Student Records
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'main.graphs' %}active{% endif %}" href="{{ url_for('main.graphs') }}">
+                            <i class="bi bi-graph-up-arrow me-1"></i> Graphs
+                        </a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'main.about' %}active{% endif %}" href="{{ url_for('main.about') }}">
+                            <i class="bi bi-info-circle me-1"></i> About Project
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Right Side Authentication / User Status -->
+                <div class="d-flex align-items-center gap-2">
+                    {% if current_user %}
+                        <div class="dropdown">
+                            <button class="btn btn-light border dropdown-toggle d-flex align-items-center gap-2" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                                <span class="badge {% if current_user.is_admin %}bg-danger{% else %}bg-primary{% endif %} text-uppercase">
+                                    {{ current_user.role }}
+                                </span>
+                                <span class="fw-medium text-dark">{{ current_user.full_name }}</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="userMenu">
+                                <li class="px-3 py-2 text-muted small border-bottom">
+                                    Signed in as <strong>@{{ current_user.username }}</strong>
+                                    {% if current_user.student_code %}
+                                        <br><span class="badge bg-secondary">ID: {{ current_user.student_code }}</span>
+                                    {% endif %}
+                                </li>
+                                <li><a class="dropdown-item" href="{{ url_for('main.dashboard') }}"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('main.predict') }}"><i class="bi bi-magic me-2"></i>New Prediction</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}"><i class="bi bi-box-arrow-right me-2"></i>Sign Out</a></li>
+                            </ul>
+                        </div>
+                    {% else %}
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary px-3">
+                            <i class="bi bi-box-arrow-in-right me-1"></i> Sign In
+                        </a>
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-primary px-3">
+                            <i class="bi bi-person-plus me-1"></i> Register
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Global Flash Notification Banner -->
+    <div class="container mt-3">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
+                        <i class="bi {% if category == 'success' %}bi-check-circle-fill{% elif category == 'danger' %}bi-exclamation-triangle-fill{% else %}bi-info-circle-fill{% endif %} me-2"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Database Engine Status Notification Badge (if SQLite Fallback engaged) -->
+        {% if db_status and db_status.using_fallback %}
+        <div class="alert alert-warning alert-dismissible fade show d-flex align-items-center py-2 px-3 small shadow-sm" role="alert">
+            <i class="bi bi-database-exclamation me-2 fs-5"></i>
+            <div>
+                <strong>Database Notice:</strong> {{ db_status.message }} 
+                <span class="text-muted">(Local offline mode active for seamless demonstration).</span>
+            </div>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Main Content Block -->
+    <main class="flex-grow-1">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row gy-4">
+                <div class="col-lg-5 col-md-6">
+                    <h5 class="text-white fw-bold d-flex align-items-center mb-3">
+                        <i class="bi bi-mortarboard-fill me-2 text-primary"></i> Student Performance Predictor
+                    </h5>
+                    <p class="text-muted small pe-lg-4">
+                        An intelligent decision-support web platform engineered with Supervised Machine Learning, Python Flask, and MySQL. Designed for B.Tech Computer Science and Engineering academic evaluation.
+                    </p>
+                    <div class="d-flex align-items-center gap-2 mt-2">
+                        <span class="badge bg-dark border border-secondary text-light">
+                            <i class="bi bi-database me-1"></i> {{ db_status.engine_name }}
+                        </span>
+                        <span class="badge bg-dark border border-secondary text-light">
+                            <i class="bi bi-cpu me-1"></i> 5 Features ML Pipeline
+                        </span>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <h6 class="text-white fw-semibold mb-3">Quick Navigation</h6>
+                    <ul class="list-unstyled small">
+                        <li class="mb-1"><a href="{{ url_for('main.home') }}">Home</a></li>
+                        <li class="mb-1"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                        <li class="mb-1"><a href="{{ url_for('main.predict') }}">Student Prediction</a></li>
+                        <li class="mb-1"><a href="{{ url_for('main.student_records') }}">Student Records</a></li>
+                        <li class="mb-1"><a href="{{ url_for('main.graphs') }}">Analytical Graphs</a></li>
+                        <li class="mb-1"><a href="{{ url_for('main.about') }}">About Project</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4 col-md-12">
+                    <h6 class="text-white fw-semibold mb-3">Verified Academic Dataset</h6>
+                    <p class="small text-muted mb-2">
+                        Derived directly from Amr Maree's Student Performance Prediction dataset on Kaggle:
+                    </p>
+                    <a href="https://www.kaggle.com/datasets/amrmaree/student-performance-prediction" target="_blank" rel="noopener" class="btn btn-sm btn-outline-light">
+                        <i class="bi bi-box-arrow-up-right me-1"></i> View Dataset on Kaggle
+                    </a>
+                </div>
+            </div>
+            <hr class="border-secondary my-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-center small text-muted">
+                <div>&copy; {{ current_year }} Student Performance Predictor. B.Tech CSE Mini-Project.</div>
+                <div>Status: <span class="text-success fw-semibold"><i class="bi bi-check-circle-fill"></i> Operational</span></div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5.3 Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom Application JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

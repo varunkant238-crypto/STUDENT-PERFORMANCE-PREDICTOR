@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Student Records - Student Performance Predictor{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between border-bottom pb-3 mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge {% if user.is_admin %}bg-danger{% else %}bg-primary{% endif %} text-uppercase">
+                    {% if user.is_admin %}Administrative View{% else %}Student View{% endif %}
+                </span>
+                <span class="text-muted small">MySQL Database Records</span>
+            </div>
+            <h2 class="fw-bold mb-0"><i class="bi bi-journal-text text-primary me-2"></i>Student Records & Prediction History</h2>
+            <p class="text-muted small mb-0">
+                {% if user.is_admin %}
+                    Central repository of all student assessment records, prediction inputs, and ML evaluations.
+                {% else %}
+                    Your personal prediction submission history and forecasted academic milestones.
+                {% endif %}
+            </p>
+        </div>
+        <div class="mt-3 mt-md-0">
+            <a href="{{ url_for('main.predict') }}" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-1"></i> New Prediction
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter and Search Bar -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-3">
+            <form method="GET" action="{{ url_for('main.student_records') }}" class="row g-2 align-items-center">
+                {% if user.is_admin %}
+                <div class="col-md-5">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control" name="search" placeholder="Search by student code, username, or name..." value="{{ search_query }}">
+                    </div>
+                </div>
+                {% endif %}
+                <div class="{% if user.is_admin %}col-md-4{% else %}col-md-6{% endif %}">
+                    <select class="form-select" name="status" onchange="this.form.submit()">
+                        <option value="" {% if not filter_status %}selected{% endif %}>Filter by Status: All Records</option>
+                        <option value="Pass" {% if filter_status == 'Pass' %}selected{% endif %}>Pass (&ge; 60 Marks)</option>
+                        <option value="Fail" {% if filter_status == 'Fail' %}selected{% endif %}>Fail (&lt; 60 Marks)</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-outline-primary w-100">Filter</button>
+                    {% if search_query or filter_status %}
+                    <a href="{{ url_for('main.student_records') }}" class="btn btn-light border text-muted">Clear</a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Records Table -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+            <h6 class="fw-bold mb-0 text-dark">
+                <i class="bi bi-table me-2 text-primary"></i>Recorded Submissions 
+                <span class="badge bg-secondary ms-2">{{ records|length }} Found</span>
+            </h6>
+        </div>
+        <div class="table-responsive">
+            <table class="table custom-table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>ID / Code</th>
+                        {% if user.is_admin %}
+                        <th>Account</th>
+                        {% endif %}
+                        <th>Study Hours</th>
+                        <th>Attendance</th>
+                        <th>Past Score</th>
+                        <th>Parental Edu</th>
+                        <th>Extra</th>
+                        <th>Predicted Marks</th>
+                        <th>Outcome</th>
+                        <th>Category</th>
+                        <th>Date & Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if records %}
+                        {% for r in records %}
+                        <tr>
+                            <td>
+                                <span class="badge bg-light text-dark border fw-bold">{{ r.student_code }}</span>
+                            </td>
+                            {% if user.is_admin %}
+                            <td>
+                                <div class="fw-semibold">{{ r.full_name }}</div>
+                                <small class="text-muted">@{{ r.username }}</small>
+                            </td>
+                            {% endif %}
+                            <td>{{ r.study_hours }} hrs/wk</td>
+                            <td>{{ r.attendance_rate }}%</td>
+                            <td>{{ r.past_scores }}</td>
+                            <td><span class="badge bg-light text-dark border">{{ r.parental_education }}</span></td>
+                            <td>
+                                <span class="badge {% if r.extracurricular == 'Yes' %}bg-success-subtle text-success{% else %}bg-secondary-subtle text-secondary{% endif %}">
+                                    {{ r.extracurricular }}
+                                </span>
+                            </td>
+                            <td>
+                                <strong class="fs-6 text-primary">{{ r.predicted_score }}</strong>
+                            </td>
+                            <td>
+                                <span class="badge {% if r.pass_fail == 'Pass' %}bg-success{% else %}bg-danger{% endif %} px-2 py-1">
+                                    {{ r.pass_fail }}
+                                </span>
+                            </td>
+                            <td>
+                                <small class="fw-medium text-dark">{{ r.performance_category }}</small>
+                            </td>
+                            <td class="small text-muted">
+                                {{ r.created_at }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="{% if user.is_admin %}11{% else %}10{% endif %}" class="text-center py-5 text-muted">
+                                <i class="bi bi-folder-x fs-1 d-block mb-2 text-secondary opacity-50"></i>
+                                <h5>No Student Records Found</h5>
+                                <p class="small text-muted mb-3">No prediction records match the current filter criteria.</p>
+                                <a href="{{ url_for('main.predict') }}" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-plus-circle me-1"></i> Submit a Prediction
+                                </a>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

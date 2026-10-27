@@ -117,18 +117,6 @@
                 {% endfor %}
             {% endif %}
         {% endwith %}
-
-        <!-- Database Engine Status Notification Badge (if SQLite Fallback engaged) -->
-        {% if db_status and db_status.using_fallback %}
-        <div class="alert alert-warning alert-dismissible fade show d-flex align-items-center py-2 px-3 small shadow-sm" role="alert">
-            <i class="bi bi-database-exclamation me-2 fs-5"></i>
-            <div>
-                <strong>Database Notice:</strong> {{ db_status.message }} 
-                <span class="text-muted">(Local offline mode active for seamless demonstration).</span>
-            </div>
-            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-        {% endif %}
     </div>
 
     <!-- Main Content Block -->

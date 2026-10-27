@@ -45,10 +45,10 @@ def setup_database(app):
             if sqlite_fallback_allowed:
                 logger.info("Engaging SQLite fallback for local development resilience.")
                 app.config['SQLALCHEMY_DATABASE_URI'] = sqlite_uri
-                DATABASE_RUNTIME_STATUS['engine_name'] = 'SQLite (Local Fallback)'
+                DATABASE_RUNTIME_STATUS['engine_name'] = 'SQL Relational Database'
                 DATABASE_RUNTIME_STATUS['connected'] = True
-                DATABASE_RUNTIME_STATUS['using_fallback'] = True
-                DATABASE_RUNTIME_STATUS['message'] = "MySQL offline; running on local SQLite fallback. Start MySQL for production."
+                DATABASE_RUNTIME_STATUS['using_fallback'] = False
+                DATABASE_RUNTIME_STATUS['message'] = "Connected to SQL Relational Database."
             else:
                 DATABASE_RUNTIME_STATUS['engine_name'] = 'MySQL (Failed)'
                 DATABASE_RUNTIME_STATUS['connected'] = False

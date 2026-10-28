@@ -43,7 +43,7 @@ def login():
                 return redirect(next_url)
             return redirect(url_for('main.dashboard'))
         else:
-            flash("Invalid username or password. Please verify your credentials or use the 1-Click Demo buttons below.", "danger")
+            flash("Invalid username or password. Please verify your credentials.", "danger")
 
     return render_template('login.html')
 

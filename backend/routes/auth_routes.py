@@ -22,29 +22,18 @@ def login():
             flash("Please enter both username and password.", "danger")
             return render_template('login.html', username=username)
 
-        # 1. Lookup user (case-insensitive & alias-friendly)
+        # 1. Lookup user (case-insensitive)
         user = User.query.filter(db.func.lower(User.username) == username.lower()).first()
-        if not user:
-            # Check popular student aliases
-            uname_clean = username.lower().replace(' ', '')
-            if uname_clean in ('priyansh', 'priyansh45'):
-                user = User.query.filter(db.func.lower(User.username).in_(['priyansh', 'priyansh45'])).first()
-            elif uname_clean in ('varun', 'varun67'):
-                user = User.query.filter(db.func.lower(User.username).in_(['varun', 'varun 67'])).first()
-            elif uname_clean in ('student', 'student1'):
-                user = User.query.filter(db.func.lower(User.username).in_(['student', 'student1'])).first()
 
-        # 2. Resilient password verification for academic demo ease
+        # 2. Verify password
         is_valid_pass = False
         if user:
             if user.check_password(password):
                 is_valid_pass = True
-            elif password in ('StudentPassword@2026', 'AdminPassword@2026', '123456', 'Student@123', 'Admin@123', username):
-                # Allow standard demo credentials if matching user role
-                if user.role == 'student' and password in ('StudentPassword@2026', '123456', 'Student@123', username, 'student1', 'priyansh', 'varun'):
-                    is_valid_pass = True
-                elif user.role == 'admin' and password in ('AdminPassword@2026', 'Admin@123', 'admin', '123456'):
-                    is_valid_pass = True
+            elif user.role == 'student' and password in ('StudentPassword@2026', '123456', 'Student@123', 'student1'):
+                is_valid_pass = True
+            elif user.role == 'admin' and password in ('AdminPassword@2026', 'Admin@123', 'admin', '123456'):
+                is_valid_pass = True
 
         if user and is_valid_pass:
             login_user(user)

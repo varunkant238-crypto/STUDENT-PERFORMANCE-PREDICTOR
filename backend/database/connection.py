@@ -112,41 +112,7 @@ def seed_initial_data(app):
         db.session.commit()
         logger.info("Created demo student account: student1 (S147)")
 
-    # 3. Seed Priyansh Student Account
-    priyansh_user = User.query.filter_by(username='priyansh45').first()
-    if not priyansh_user:
-        priyansh = User(
-            username='priyansh45',
-            email='priyansh@student.com',
-            role='student',
-            full_name='Priyansh',
-            student_code='S2007'
-        )
-        priyansh.set_password('StudentPassword@2026')
-        db.session.add(priyansh)
-        db.session.commit()
-        db.session.add(Student(student_code='S2007', gender='Male', user_id=priyansh.id))
-        db.session.commit()
-        logger.info("Created demo student account: priyansh45 (S2007)")
-
-    # 4. Seed Varun Student Account
-    varun_user = User.query.filter_by(username='varun 67').first()
-    if not varun_user:
-        varun = User(
-            username='varun 67',
-            email='varun@student.com',
-            role='student',
-            full_name='Varun Kant',
-            student_code='S456'
-        )
-        varun.set_password('StudentPassword@2026')
-        db.session.add(varun)
-        db.session.commit()
-        db.session.add(Student(student_code='S456', gender='Male', user_id=varun.id))
-        db.session.commit()
-        logger.info("Created demo student account: varun 67 (S456)")
-
-    # 5. Seed initial student records from dataset if empty
+    # 3. Seed initial student records from dataset if empty
     if Student.query.count() < 5:
         initial_students = [
             ('S136', 'Male'),

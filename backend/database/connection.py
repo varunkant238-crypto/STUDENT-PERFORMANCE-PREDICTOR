@@ -71,8 +71,8 @@ def setup_database(app):
     return DATABASE_RUNTIME_STATUS
 
 def seed_initial_data(app):
-    """Seed initial administrator account and base student profiles if not existing."""
-    # 1. Seed Admin
+    """Seed initial administrator account if not existing, and purge any legacy dummy accounts."""
+    # 1. Seed Official Admin Account
     admin_user = app.config.get('ADMIN_USERNAME', 'admin')
     existing_admin = User.query.filter_by(username=admin_user).first()
     if not existing_admin:
@@ -86,42 +86,19 @@ def seed_initial_data(app):
         admin.set_password(app.config.get('ADMIN_PASSWORD', 'AdminPassword@2026'))
         db.session.add(admin)
         db.session.commit()
-        logger.info(f"Created initial admin user: {admin_user}")
+        logger.info(f"Created official administrator account: {admin_user}")
 
-    # 2. Seed Demo Student User
-    demo_student = User.query.filter_by(username='student1').first()
-    if not demo_student:
-        student = User(
-            username='student1',
-            email='student1@college.edu',
-            role='student',
-            full_name='Aarav Sharma',
-            student_code='S147'
-        )
-        student.set_password('StudentPassword@2026')
-        db.session.add(student)
+    # 2. Purge any legacy dummy student accounts (Aarav / student1) for authentic college database
+    try:
+        dummy_users = User.query.filter(User.username.in_(['student1', 'aarav', 'aarav mishra'])).all()
+        for u in dummy_users:
+            Student.query.filter_by(user_id=u.id).delete()
+            Prediction.query.filter_by(user_id=u.id).delete()
+            db.session.delete(u)
+        
+        # Purge dummy unassigned profiles S147
+        Student.query.filter(Student.student_code.in_(['S147'])).delete()
         db.session.commit()
-
-        # Add profile
-        profile = Student(
-            student_code='S147',
-            gender='Male',
-            user_id=student.id
-        )
-        db.session.add(profile)
-        db.session.commit()
-        logger.info("Created demo student account: student1 (S147)")
-
-    # 3. Seed initial student records from dataset if empty
-    if Student.query.count() < 5:
-        initial_students = [
-            ('S136', 'Male'),
-            ('S209', 'Female'),
-            ('S458', 'Female'),
-            ('S078', 'Female'),
-            ('S235', 'Male'),
-        ]
-        for code, gen in initial_students:
-            if not Student.query.filter_by(student_code=code).first():
-                db.session.add(Student(student_code=code, gender=gen))
-        db.session.commit()
+    except Exception as e:
+        logger.warning(f"Note during dummy cleanup: {e}")
+        db.session.rollback()

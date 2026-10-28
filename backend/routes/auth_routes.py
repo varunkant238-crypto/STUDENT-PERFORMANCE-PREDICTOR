@@ -25,17 +25,8 @@ def login():
         # 1. Lookup user (case-insensitive)
         user = User.query.filter(db.func.lower(User.username) == username.lower()).first()
 
-        # 2. Verify password
-        is_valid_pass = False
-        if user:
-            if user.check_password(password):
-                is_valid_pass = True
-            elif user.role == 'student' and password in ('StudentPassword@2026', '123456', 'Student@123', 'student1'):
-                is_valid_pass = True
-            elif user.role == 'admin' and password in ('AdminPassword@2026', 'Admin@123', 'admin', '123456'):
-                is_valid_pass = True
-
-        if user and is_valid_pass:
+        # 2. Standard secure password verification
+        if user and user.check_password(password):
             login_user(user)
             flash(f"Welcome back, {user.full_name}!", "success")
             next_url = request.args.get('next')

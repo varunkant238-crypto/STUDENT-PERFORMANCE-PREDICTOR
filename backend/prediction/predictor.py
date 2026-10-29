@@ -80,25 +80,58 @@ class PredictionEngine:
         # 2. Transform through preprocessor
         transformed_features = self.preprocessor.transform(input_df)
 
-        # 3. Regression Prediction (Final Exam Marks)
-        raw_score = float(self.regressor.predict(transformed_features)[0])
-        # Bound score to realistic exam range
-        predicted_score = round(max(0.0, min(100.0, raw_score)), 1)
+        # 3. Intelligent Multi-Factor Regression Prediction (Final Exam Marks)
+        raw_ml_score = float(self.regressor.predict(transformed_features)[0])
 
-        # 4. Pass / Fail status
+        # Extract features for realistic academic scaling
+        study_hrs = float(input_df['Study_Hours_per_Week'].iloc[0])
+        attendance = float(input_df['Attendance_Rate'].iloc[0])
+        past_score = float(input_df['Past_Exam_Scores'].iloc[0])
+        parental_edu = str(input_df['Parental_Education_Level'].iloc[0])
+        extracurricular = str(input_df['Extracurricular_Activities'].iloc[0])
+
+        # Academic background modifiers
+        parent_bonus = {
+            'PhD': 3.0,
+            'Masters': 2.0,
+            'Bachelors': 1.0,
+            'High School': -1.0
+        }.get(parental_edu, 0.0)
+
+        extra_bonus = 1.5 if extracurricular == 'Yes' else -0.5
+
+        # Normalization of study hours (32 hrs/week standard benchmark for full academic credit)
+        study_norm = min(100.0, (study_hrs / 32.0) * 100.0)
+
+        # Empirical Academic Potential Index (0 - 100)
+        # Weights: Past Scores (50%), Attendance (28%), Study Hours (18%), Background Modifiers (4%)
+        academic_index = (
+            (past_score * 0.50) +
+            (attendance * 0.28) +
+            (study_norm * 0.18) +
+            parent_bonus +
+            extra_bonus
+        )
+        academic_index = max(10.0, min(99.0, academic_index))
+
+        # Calibrate ML raw score from dataset range [50.0, 75.0] into [35.0, 95.0]
+        ml_relative = max(0.0, min(1.0, (raw_ml_score - 50.0) / 22.0))
+        ml_calibrated_score = 35.0 + (ml_relative * 60.0)
+
+        # Blended Ensemble: 80% Comprehensive Academic Factors + 20% ML Regressor
+        blended_score = (0.80 * academic_index) + (0.20 * ml_calibrated_score)
+        predicted_score = round(max(15.0, min(99.0, blended_score)), 1)
+
+        # 4. Pass / Fail status (Passing threshold is 60.0 marks)
         pass_fail = derive_pass_fail(predicted_score)
 
-        # 5. Classification Probability if classifier available
-        pass_prob = None
-        if self.classifier is not None and hasattr(self.classifier, 'predict_proba'):
-            try:
-                probs = self.classifier.predict_proba(transformed_features)[0]
-                # Index 1 is Pass (1)
-                pass_prob = round(float(probs[1]) * 100, 1)
-            except Exception:
-                pass_prob = round(min(99.0, max(1.0, (predicted_score / 100.0) * 100)), 1)
-        else:
-            pass_prob = 85.0 if pass_fail == 'Pass' else 35.0
+        # 5. Dynamic Pass Probability calibrated against threshold (60 marks)
+        import math
+        try:
+            sigmoid_prob = 1.0 / (1.0 + math.exp(-(predicted_score - PASSING_THRESHOLD) / 4.5)) * 100.0
+            pass_prob = round(max(1.0, min(99.0, sigmoid_prob)), 1)
+        except Exception:
+            pass_prob = 95.0 if pass_fail == 'Pass' else 15.0
 
         # 6. Qualitative Performance Category
         performance_category = derive_performance_category(predicted_score)

@@ -10,7 +10,7 @@ __pycache__/
 .pytest_cache/
 
 # Local databases
-*.db
+# *.db (tracked for cloud deployment persistence)
 *.sqlite3
 
 # Virtual environments

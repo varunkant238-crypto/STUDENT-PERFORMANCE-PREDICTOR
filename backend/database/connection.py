@@ -87,18 +87,3 @@ def seed_initial_data(app):
         db.session.add(admin)
         db.session.commit()
         logger.info(f"Created official administrator account: {admin_user}")
-
-    # 2. Purge any legacy dummy student accounts (Aarav / student1) for authentic college database
-    try:
-        dummy_users = User.query.filter(User.username.in_(['student1', 'aarav', 'aarav mishra'])).all()
-        for u in dummy_users:
-            Student.query.filter_by(user_id=u.id).delete()
-            Prediction.query.filter_by(user_id=u.id).delete()
-            db.session.delete(u)
-        
-        # Purge dummy unassigned profiles S147
-        Student.query.filter(Student.student_code.in_(['S147'])).delete()
-        db.session.commit()
-    except Exception as e:
-        logger.warning(f"Note during dummy cleanup: {e}")
-        db.session.rollback()

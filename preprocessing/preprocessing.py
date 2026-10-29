@@ -56,7 +56,9 @@ def derive_pass_fail(score: float) -> str:
 
 def derive_performance_category(score: float) -> str:
     """Categorize numerical performance score into intuitive academic bands."""
-    if score >= 70.0:
+    if score >= 85.0:
+        return "Outstanding (Grade A+)"
+    elif score >= 70.0:
         return "Excellent (Grade A)"
     elif score >= 65.0:
         return "Good (Grade B)"

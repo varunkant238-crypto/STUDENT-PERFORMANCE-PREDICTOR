@@ -34,8 +34,14 @@ class Config:
     # Local fallback SQLite URI
     SQLITE_DATABASE_URI = f"sqlite:///{os.path.join(basedir, 'student_predictor.db')}"
 
-    # Default URI configured as MySQL
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', MYSQL_DATABASE_URI)
+    # Database URI configuration: supports DATABASE_URL (Cloud PostgreSQL / TiDB MySQL) or local MySQL / SQLite
+    raw_db_url = os.environ.get('DATABASE_URL')
+    if raw_db_url:
+        if raw_db_url.startswith('postgres://'):
+            raw_db_url = raw_db_url.replace('postgres://', 'postgresql://', 1)
+        SQLALCHEMY_DATABASE_URI = raw_db_url
+    else:
+        SQLALCHEMY_DATABASE_URI = MYSQL_DATABASE_URI
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # Initial Admin Seed Configuration

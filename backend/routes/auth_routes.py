@@ -3,8 +3,9 @@ Authentication Routes (Login, Register, Logout).
 """
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
-from backend.database.models import db, User, Student
+from backend.database.models import db, User, Student, Prediction
 from backend.authentication.auth import login_user, logout_user, get_current_user
+from backend.database.persistent_sync import record_persistent_user, restore_user_by_identifier
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -22,10 +23,17 @@ def login():
             flash("Please enter both username and password.", "danger")
             return render_template('login.html', username=username)
 
-        # 1. Lookup user (case-insensitive)
-        user = User.query.filter(db.func.lower(User.username) == username.lower()).first()
+        # 1. Lookup user (by username OR email, case-insensitive)
+        user = User.query.filter(
+            (db.func.lower(User.username) == username.lower()) |
+            (db.func.lower(User.email) == username.lower())
+        ).first()
 
-        # 2. Standard secure password verification
+        # 2. Resilient Fallback: If container restarted and user is in persistent snapshot, restore instantly
+        if not user:
+            user = restore_user_by_identifier(db, User, Student, Prediction, username)
+
+        # 3. Standard secure password verification
         if user and user.check_password(password):
             login_user(user)
             flash(f"Welcome back, {user.full_name}!", "success")
@@ -64,37 +72,54 @@ def register():
             flash("Password must be at least 6 characters long.", "danger")
             return render_template('login.html', register_mode=True, form_data=request.form)
 
-        if User.query.filter_by(username=username).first():
+        if User.query.filter(db.func.lower(User.username) == username.lower()).first():
             flash("Username already exists. Please select a different username.", "warning")
             return render_template('login.html', register_mode=True, form_data=request.form)
 
-        if User.query.filter_by(email=email).first():
+        if User.query.filter(db.func.lower(User.email) == email.lower()).first():
             flash("An account with this email is already registered.", "warning")
             return render_template('login.html', register_mode=True, form_data=request.form)
 
-        # Create student user
-        new_user = User(
-            username=username,
-            email=email,
-            full_name=full_name,
-            role='student',
-            student_code=student_code if student_code else f"STU-{username[:4].upper()}"
-        )
-        new_user.set_password(password)
-        db.session.add(new_user)
-        db.session.commit()
+        if student_code:
+            existing_stu = Student.query.filter(db.func.lower(Student.student_code) == student_code.lower()).first()
+            if existing_stu:
+                flash("This Student ID / Roll Number is already registered.", "warning")
+                return render_template('login.html', register_mode=True, form_data=request.form)
 
-        # Create student profile
-        student_profile = Student(
-            student_code=new_user.student_code,
-            user_id=new_user.id
-        )
-        db.session.add(student_profile)
-        db.session.commit()
+        try:
+            # Create student user
+            new_user = User(
+                username=username,
+                email=email,
+                full_name=full_name,
+                role='student',
+                student_code=student_code if student_code else None
+            )
+            new_user.set_password(password)
+            db.session.add(new_user)
+            db.session.flush()
 
-        login_user(new_user)
-        flash("Registration successful! Welcome to the Student Performance Predictor.", "success")
-        return redirect(url_for('main.dashboard'))
+            if not new_user.student_code:
+                new_user.student_code = f"STU-{new_user.id:04d}"
+
+            # Create student profile
+            student_profile = Student(
+                student_code=new_user.student_code,
+                user_id=new_user.id
+            )
+            db.session.add(student_profile)
+            db.session.commit()
+
+            # Record to persistent synchronized snapshot
+            record_persistent_user(new_user)
+
+            login_user(new_user)
+            flash("Registration successful! Welcome to the Student Performance Predictor.", "success")
+            return redirect(url_for('main.dashboard'))
+        except Exception as e:
+            db.session.rollback()
+            flash("An error occurred during registration. Please try again.", "danger")
+            return render_template('login.html', register_mode=True, form_data=request.form)
 
     return render_template('login.html', register_mode=True)
 

@@ -12,6 +12,7 @@ __pycache__/
 # Local databases
 # *.db (tracked for cloud deployment persistence)
 *.sqlite3
+backups/
 
 # Virtual environments
 venv/

@@ -5,6 +5,7 @@ Loads environment variables and sets up database and Flask application parameter
 
 import os
 import urllib.parse
+from datetime import timedelta
 from dotenv import load_dotenv
 
 # Load .env file from project root
@@ -13,6 +14,7 @@ load_dotenv(os.path.join(basedir, '.env'))
 
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY', 'default_mini_project_secret_key_change_me')
+    PERMANENT_SESSION_LIFETIME = timedelta(days=7)
     
     # MySQL Database credentials
     DB_USER = os.environ.get('DB_USER', 'root')

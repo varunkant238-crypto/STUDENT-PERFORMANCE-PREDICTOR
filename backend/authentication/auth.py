@@ -10,6 +10,7 @@ from backend.database.models import db, User
 def login_user(user: User):
     """Store authenticated user details in Flask session."""
     session.clear()
+    session.permanent = True
     session['user_id'] = user.id
     session['username'] = user.username
     session['role'] = user.role

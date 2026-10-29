@@ -8,6 +8,7 @@ import os
 import logging
 from sqlalchemy import create_engine, text
 from backend.database.models import db, User, Student, Prediction
+from backend.database.persistent_sync import restore_persistent_data
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +28,32 @@ def setup_database(app):
     sqlite_fallback_allowed = app.config.get('SQLITE_FALLBACK', True)
     sqlite_uri = app.config.get('SQLITE_DATABASE_URI', 'sqlite:///student_predictor.db')
 
-    # Test MySQL connectivity if MySQL is configured
-    if 'mysql' in configured_uri:
+    # Test Database connectivity
+    if 'postgresql' in configured_uri or 'postgres' in configured_uri:
+        try:
+            logger.info("Connecting to PostgreSQL database...")
+            test_engine = create_engine(configured_uri)
+            with test_engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
+            DATABASE_RUNTIME_STATUS['engine_name'] = 'PostgreSQL'
+            DATABASE_RUNTIME_STATUS['connected'] = True
+            DATABASE_RUNTIME_STATUS['using_fallback'] = False
+            DATABASE_RUNTIME_STATUS['message'] = "Connected to Cloud PostgreSQL Database."
+            logger.info("Successfully connected to Cloud PostgreSQL database.")
+        except Exception as e:
+            logger.warning(f"PostgreSQL connection failed: {e}")
+            if sqlite_fallback_allowed:
+                logger.info("Engaging SQLite fallback for resilience.")
+                app.config['SQLALCHEMY_DATABASE_URI'] = sqlite_uri
+                DATABASE_RUNTIME_STATUS['engine_name'] = 'SQLite'
+                DATABASE_RUNTIME_STATUS['connected'] = True
+                DATABASE_RUNTIME_STATUS['using_fallback'] = True
+                DATABASE_RUNTIME_STATUS['message'] = "PostgreSQL unavailable, using local SQLite."
+            else:
+                DATABASE_RUNTIME_STATUS['engine_name'] = 'PostgreSQL (Failed)'
+                DATABASE_RUNTIME_STATUS['connected'] = False
+                DATABASE_RUNTIME_STATUS['message'] = f"Unable to reach PostgreSQL: {str(e)}"
+    elif 'mysql' in configured_uri:
         try:
             logger.info(f"Attempting connection to MySQL: {app.config.get('DB_HOST')}:{app.config.get('DB_PORT')}")
             # Quick timeout test
@@ -87,3 +112,9 @@ def seed_initial_data(app):
         db.session.add(admin)
         db.session.commit()
         logger.info(f"Created official administrator account: {admin_user}")
+
+    # 2. Restore all registered users and past prediction history from persistent snapshot
+    try:
+        restore_persistent_data(db, User, Student, Prediction)
+    except Exception as e:
+        logger.warning(f"Note on persistent data restoration: {e}")

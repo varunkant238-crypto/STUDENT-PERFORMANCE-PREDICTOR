@@ -75,6 +75,14 @@ def save_prediction(user, input_data, prediction_result, student_code=None):
     )
     db.session.add(prediction)
     db.session.commit()
+
+    # Synchronize with persistent store for instant recovery across restarts
+    try:
+        from backend.database.persistent_sync import record_persistent_prediction
+        record_persistent_prediction(prediction, user.username)
+    except Exception:
+        pass
+
     return prediction
 
 def get_student_records(user, search_query=None, filter_status=None):

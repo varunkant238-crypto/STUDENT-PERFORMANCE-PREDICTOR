@@ -1,0 +1,160 @@
+{
+  "users": [
+    {
+      "username": "admin",
+      "email": "admin@college.edu",
+      "full_name": "System Administrator",
+      "role": "admin",
+      "student_code": null,
+      "password_hash": "scrypt:32768:8:1$mMfw4VQBB6IZtReX$025bb743540e94428f48921ad670333ee0615bd84aadb70f9d141a73af3b7723e9829366a70445fe2d48ed141a4290037a970a31966a45cec302036eb375bee9"
+    },
+    {
+      "username": "varun 67",
+      "email": "varun@kcnitgmial.com",
+      "full_name": "varun kant",
+      "role": "student",
+      "student_code": "S456",
+      "password_hash": "scrypt:32768:8:1$r4oFc7tPDjdLaPwC$b0136cfc6ebca10d73d732497e6e3eb4a71a48a097e6336217f7db88ae01faab39c92c56b070e632e36ca4ea8f928ff271ad30ac54401a7823d0b17b6f620084"
+    },
+    {
+      "username": "priyansh45",
+      "email": "priyansh45@gmail.com",
+      "full_name": "priyansh",
+      "role": "student",
+      "student_code": "2007",
+      "password_hash": "scrypt:32768:8:1$XsfkYY97Oi2U5MEY$f7c6423094ed73ac9dd0ab4cf452391f78d216180b719b3c029e7bdfd0792cae23c818e07959b81fa3e50b934bc760c871872fb1f99840b3ed7f6b3bf80e2d02"
+    }
+  ],
+  "predictions": [
+    {
+      "username": "varun 67",
+      "student_code": "S456",
+      "study_hours": 31,
+      "attendance_rate": 80.0,
+      "past_scores": 74,
+      "parental_education": "Bachelors",
+      "extracurricular": "Yes",
+      "predicted_score": 58.4,
+      "pass_fail": "Fail",
+      "performance_category": "Needs Improvement (Grade F - Fail)",
+      "created_at": "2026-10-26 19:26:44"
+    },
+    {
+      "username": "varun 67",
+      "student_code": "S456",
+      "study_hours": 56,
+      "attendance_rate": 96.0,
+      "past_scores": 95,
+      "parental_education": "Masters",
+      "extracurricular": "Yes",
+      "predicted_score": 67.4,
+      "pass_fail": "Pass",
+      "performance_category": "Good (Grade B)",
+      "created_at": "2026-10-26 19:28:21"
+    },
+    {
+      "username": "varun 67",
+      "student_code": "S456",
+      "study_hours": 56,
+      "attendance_rate": 96.0,
+      "past_scores": 95,
+      "parental_education": "Masters",
+      "extracurricular": "Yes",
+      "predicted_score": 67.4,
+      "pass_fail": "Pass",
+      "performance_category": "Good (Grade B)",
+      "created_at": "2026-10-26 19:28:26"
+    },
+    {
+      "username": "varun 67",
+      "student_code": "S456",
+      "study_hours": 60,
+      "attendance_rate": 99.0,
+      "past_scores": 99,
+      "parental_education": "PhD",
+      "extracurricular": "Yes",
+      "predicted_score": 66.4,
+      "pass_fail": "Pass",
+      "performance_category": "Good (Grade B)",
+      "created_at": "2026-10-26 19:30:31"
+    },
+    {
+      "username": "priyansh45",
+      "student_code": "2007",
+      "study_hours": 24,
+      "attendance_rate": 90.0,
+      "past_scores": 92,
+      "parental_education": "PhD",
+      "extracurricular": "Yes",
+      "predicted_score": 61.2,
+      "pass_fail": "Pass",
+      "performance_category": "Average (Grade C - Pass)",
+      "created_at": "2026-10-27 05:45:36"
+    },
+    {
+      "username": "priyansh45",
+      "student_code": "2007",
+      "study_hours": 60,
+      "attendance_rate": 100.0,
+      "past_scores": 100,
+      "parental_education": "PhD",
+      "extracurricular": "Yes",
+      "predicted_score": 68.3,
+      "pass_fail": "Pass",
+      "performance_category": "Good (Grade B)",
+      "created_at": "2026-10-27 08:01:43"
+    },
+    {
+      "username": "priyansh45",
+      "student_code": "2007",
+      "study_hours": 25,
+      "attendance_rate": 80.0,
+      "past_scores": 75,
+      "parental_education": "Bachelors",
+      "extracurricular": "No",
+      "predicted_score": 54.6,
+      "pass_fail": "Fail",
+      "performance_category": "Needs Improvement (Grade F - Fail)",
+      "created_at": "2026-10-27 08:03:38"
+    },
+    {
+      "username": "priyansh45",
+      "student_code": "2007",
+      "study_hours": 10,
+      "attendance_rate": 50.0,
+      "past_scores": 56,
+      "parental_education": "Bachelors",
+      "extracurricular": "No",
+      "predicted_score": 49.2,
+      "pass_fail": "Fail",
+      "performance_category": "Needs Improvement (Grade F - Fail)",
+      "created_at": "2026-10-27 08:04:52"
+    },
+    {
+      "username": "priyansh45",
+      "student_code": "2007",
+      "study_hours": 2,
+      "attendance_rate": 40.0,
+      "past_scores": 30,
+      "parental_education": "Bachelors",
+      "extracurricular": "Yes",
+      "predicted_score": 48.9,
+      "pass_fail": "Fail",
+      "performance_category": "Needs Improvement (Grade F - Fail)",
+      "created_at": "2026-10-27 08:18:56"
+    },
+    {
+      "username": "teststudent",
+      "student_code": "S100",
+      "study_hours": 25,
+      "attendance_rate": 85.0,
+      "past_scores": 75,
+      "parental_education": "Bachelors",
+      "extracurricular": "Yes",
+      "predicted_score": 73.4,
+      "pass_fail": "Pass",
+      "performance_category": "Excellent (Grade A)",
+      "created_at": "2026-10-29 16:08:32"
+    }
+  ]
+}

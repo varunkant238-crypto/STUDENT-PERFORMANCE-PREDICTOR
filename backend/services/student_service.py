@@ -5,7 +5,7 @@ and student profile management.
 """
 
 from sqlalchemy import func
-from backend.database.models import db, User, Student, Prediction
+from backend.database.models import db, User, Student, Prediction, get_ist_now
 
 def get_dashboard_metrics(user):
     """
@@ -71,7 +71,8 @@ def save_prediction(user, input_data, prediction_result, student_code=None):
         extracurricular=str(input_data['Extracurricular_Activities'].iloc[0]),
         predicted_score=float(prediction_result['predicted_score']),
         pass_fail=str(prediction_result['pass_fail']),
-        performance_category=str(prediction_result['performance_category'])
+        performance_category=str(prediction_result['performance_category']),
+        created_at=get_ist_now()
     )
     db.session.add(prediction)
     db.session.commit()
@@ -121,7 +122,7 @@ def get_student_records(user, search_query=None, filter_status=None):
                 'predicted_score': pred.predicted_score,
                 'pass_fail': pred.pass_fail,
                 'performance_category': pred.performance_category,
-                'created_at': pred.created_at.strftime('%Y-%m-%d %H:%M') if pred.created_at else ''
+                'created_at': pred.created_at.strftime('%d %b %Y, %I:%M %p') if pred.created_at else ''
             })
         return records
     else:

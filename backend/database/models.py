@@ -2,9 +2,16 @@
 SQLAlchemy Database Models for Student Performance Predictor.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+
+# Indian Standard Time (IST = UTC + 5:30)
+IST = timezone(timedelta(hours=5, minutes=30))
+
+def get_ist_now():
+    """Return current timestamp in Indian Standard Time (IST)."""
+    return datetime.now(IST).replace(tzinfo=None)
 
 db = SQLAlchemy()
 
@@ -18,7 +25,7 @@ class User(db.Model):
     role = db.Column(db.String(20), nullable=False, default='student')  # 'admin' or 'student'
     full_name = db.Column(db.String(100), nullable=False)
     student_code = db.Column(db.String(30), nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=get_ist_now)
 
     # Relationships
     predictions = db.relationship('Prediction', backref='user', lazy='dynamic', cascade='all, delete-orphan')
@@ -46,7 +53,7 @@ class Student(db.Model):
     student_code = db.Column(db.String(30), unique=True, nullable=False, index=True)
     gender = db.Column(db.String(20), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'), nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=get_ist_now)
 
     def __repr__(self):
         return f"<Student {self.student_code}>"
@@ -70,9 +77,12 @@ class Prediction(db.Model):
     predicted_score = db.Column(db.Float, nullable=False)
     pass_fail = db.Column(db.String(10), nullable=False)
     performance_category = db.Column(db.String(50), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    created_at = db.Column(db.DateTime, default=get_ist_now, index=True)
 
     def to_dict(self):
+        time_str = ''
+        if self.created_at:
+            time_str = self.created_at.strftime('%d %b %Y, %I:%M %p')
         return {
             'id': self.id,
             'student_code': self.student_code,
@@ -84,7 +94,7 @@ class Prediction(db.Model):
             'predicted_score': round(self.predicted_score, 1),
             'pass_fail': self.pass_fail,
             'performance_category': self.performance_category,
-            'created_at': self.created_at.strftime('%Y-%m-%d %H:%M') if self.created_at else ''
+            'created_at': time_str
         }
 
     def __repr__(self):

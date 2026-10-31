@@ -1,33 +1,69 @@
 {% extends "base.html" %}
 
-{% block title %}Sign In - Student Performance Predictor{% endblock %}
+{% block title %}{% if register_mode %}New Student Registration{% else %}Sign In{% endif %} - Student Performance Predictor{% endblock %}
 
 {% block content %}
-<div class="container py-5">
+<div class="container py-4 py-md-5">
     <div class="row justify-content-center">
-        <div class="col-lg-5 col-md-7">
+        <div class="col-lg-5 col-md-7 col-sm-10">
+            <!-- Active Session Notice (Fast Switch Banner) -->
+            {% if current_user %}
+            <div class="alert alert-info border-0 shadow-sm rounded-4 mb-4 p-3">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div>
+                        <div class="small text-muted fw-semibold">Active Session Detected:</div>
+                        <div class="fw-bold text-dark fs-6">
+                            <i class="bi bi-person-check-fill text-primary me-1"></i> {{ current_user.full_name }}
+                            <span class="badge {% if current_user.is_admin %}bg-danger{% else %}bg-primary{% endif %} text-uppercase ms-1" style="font-size: 0.7rem;">
+                                {{ current_user.role }}
+                            </span>
+                        </div>
+                        <div class="small text-muted">@{{ current_user.username }}{% if current_user.student_code %} &bull; {{ current_user.student_code }}{% endif %}</div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('main.dashboard') }}" class="btn btn-sm btn-primary px-3 shadow-sm">
+                            <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                        </a>
+                        <a href="{{ url_for('auth.logout') }}" class="btn btn-sm btn-outline-danger px-3">
+                            <i class="bi bi-box-arrow-right me-1"></i> Sign Out
+                        </a>
+                    </div>
+                </div>
+                <hr class="my-2">
+                <p class="small text-muted mb-0">
+                    <i class="bi bi-info-circle-fill text-info me-1"></i> Want to switch to another student account? Fill the form below to sign in or register directly.
+                </p>
+            </div>
+            {% endif %}
+
             <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
                 <!-- Card Header -->
                 <div class="bg-primary text-white p-4 text-center">
-                    <div class="bg-white text-primary p-3 rounded-circle d-inline-flex align-items-center justify-content-center mb-2 shadow-sm" style="width: 56px; height: 56px;">
-                        <i class="bi bi-person-lock fs-3"></i>
+                    <div class="bg-white text-primary p-3 rounded-circle d-inline-flex align-items-center justify-content-center mb-2 shadow-sm" style="width: 58px; height: 58px;">
+                        <i class="bi bi-mortarboard-fill fs-3"></i>
                     </div>
                     <h4 class="fw-bold mb-1">EduPredict Portal</h4>
-                    <p class="small text-white text-opacity-75 mb-0">Secure Role-Based Academic Authentication</p>
+                    <p class="small text-white text-opacity-75 mb-0">Academic Performance & Analytics Platform</p>
                 </div>
 
                 <div class="card-body p-4">
-                    <!-- Nav Tabs: Login vs Register -->
+                    <!-- Nav Tabs: Login vs Register (Guaranteed to work on all devices) -->
                     <ul class="nav nav-pills nav-justified mb-4 p-1 bg-light rounded-3" id="authTabs" role="tablist">
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link {% if not register_mode %}active fw-semibold{% endif %}" id="login-tab" data-bs-toggle="pill" data-bs-target="#login-pane" type="button" role="tab">
+                            <a class="nav-link {% if not register_mode %}active fw-bold shadow-sm{% else %}text-muted{% endif %}" 
+                               id="login-tab" 
+                               href="{{ url_for('auth.login') }}"
+                               onclick="switchAuthTab(event, 'login-pane', this)">
                                 <i class="bi bi-box-arrow-in-right me-1"></i> Sign In
-                            </button>
+                            </a>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link {% if register_mode %}active fw-semibold{% endif %}" id="register-tab" data-bs-toggle="pill" data-bs-target="#register-pane" type="button" role="tab">
+                            <a class="nav-link {% if register_mode %}active fw-bold shadow-sm{% else %}text-muted{% endif %}" 
+                               id="register-tab" 
+                               href="{{ url_for('auth.register') }}"
+                               onclick="switchAuthTab(event, 'register-pane', this)">
                                 <i class="bi bi-person-plus me-1"></i> New Student
-                            </button>
+                            </a>
                         </li>
                     </ul>
 
@@ -36,27 +72,41 @@
                         <div class="tab-pane fade {% if not register_mode %}show active{% endif %}" id="login-pane" role="tabpanel">
                             <form method="POST" action="{{ url_for('auth.login', next=request.args.get('next')) }}">
                                 <div class="mb-3">
-                                    <label for="username" class="form-label fw-semibold small">Username</label>
+                                    <label for="username" class="form-label fw-semibold small">Username or Email</label>
                                     <div class="input-group">
-                                        <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
+                                        <span class="input-group-text bg-light text-muted"><i class="bi bi-person"></i></span>
                                         <input type="text" class="form-control" id="username" name="username" 
-                                               placeholder="Enter username" 
-                                               value="{{ username or '' }}" required autofocus>
+                                               placeholder="Enter username or email" 
+                                               value="{{ username or '' }}" required autofocus autocomplete="username">
                                     </div>
                                 </div>
 
                                 <div class="mb-4">
                                     <label for="password" class="form-label fw-semibold small">Password</label>
                                     <div class="input-group">
-                                        <span class="input-group-text bg-light"><i class="bi bi-key"></i></span>
+                                        <span class="input-group-text bg-light text-muted"><i class="bi bi-key"></i></span>
                                         <input type="password" class="form-control" id="password" name="password" 
-                                               placeholder="Enter password" required>
+                                               placeholder="Enter password" required autocomplete="current-password">
+                                        <button class="btn btn-outline-secondary" type="button" 
+                                                title="Toggle password visibility"
+                                                onclick="togglePasswordVisibility('password', this)">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
                                     </div>
                                 </div>
 
-                                <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold shadow-sm">
+                                <button type="submit" class="btn btn-primary w-100 py-2 py-md-3 fw-semibold shadow-sm fs-6">
                                     <i class="bi bi-box-arrow-in-right me-1"></i> Sign In to Account
                                 </button>
+
+                                <div class="text-center mt-4 pt-3 border-top">
+                                    <span class="text-muted small">Don't have an account yet?</span>
+                                    <a href="{{ url_for('auth.register') }}" 
+                                       onclick="switchAuthTab(event, 'register-pane', document.getElementById('register-tab'))"
+                                       class="btn btn-sm btn-outline-primary ms-2 fw-semibold">
+                                        <i class="bi bi-person-plus me-1"></i> Register New Student
+                                    </a>
+                                </div>
                             </form>
                         </div>
 
@@ -65,39 +115,86 @@
                             <form method="POST" action="{{ url_for('auth.register') }}">
                                 <div class="mb-3">
                                     <label for="reg_fullname" class="form-label fw-semibold small">Full Name <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="reg_fullname" name="full_name" placeholder="e.g. Rohan Verma" required>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light text-muted"><i class="bi bi-card-heading"></i></span>
+                                        <input type="text" class="form-control" id="reg_fullname" name="full_name" 
+                                               placeholder="e.g. Varun Kant" 
+                                               value="{{ form_data.full_name if form_data else '' }}" required>
+                                    </div>
                                 </div>
 
                                 <div class="row g-2 mb-3">
                                     <div class="col-sm-6">
                                         <label for="reg_username" class="form-label fw-semibold small">Username <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" id="reg_username" name="username" placeholder="e.g. rohan26" required>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light text-muted"><i class="bi bi-at"></i></span>
+                                            <input type="text" class="form-control" id="reg_username" name="username" 
+                                                   placeholder="e.g. varun67" 
+                                                   value="{{ form_data.username if form_data else '' }}" required autocomplete="username">
+                                        </div>
                                     </div>
                                     <div class="col-sm-6">
-                                        <label for="reg_code" class="form-label fw-semibold small">Student Code</label>
-                                        <input type="text" class="form-control" id="reg_code" name="student_code" placeholder="e.g. S458">
+                                        <label for="reg_code" class="form-label fw-semibold small">Student ID / Roll No</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light text-muted"><i class="bi bi-hash"></i></span>
+                                            <input type="text" class="form-control text-uppercase" id="reg_code" name="student_code" 
+                                                   placeholder="e.g. S147" 
+                                                   value="{{ form_data.student_code if form_data else '' }}">
+                                        </div>
                                     </div>
                                 </div>
 
                                 <div class="mb-3">
                                     <label for="reg_email" class="form-label fw-semibold small">Email Address <span class="text-danger">*</span></label>
-                                    <input type="email" class="form-control" id="reg_email" name="email" placeholder="student@college.edu" required>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light text-muted"><i class="bi bi-envelope"></i></span>
+                                        <input type="email" class="form-control" id="reg_email" name="email" 
+                                               placeholder="student@college.edu" 
+                                               value="{{ form_data.email if form_data else '' }}" required autocomplete="email">
+                                    </div>
                                 </div>
 
                                 <div class="row g-2 mb-4">
                                     <div class="col-sm-6">
                                         <label for="reg_pass" class="form-label fw-semibold small">Password <span class="text-danger">*</span></label>
-                                        <input type="password" class="form-control" id="reg_pass" name="password" placeholder="Min. 6 chars" required>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light text-muted"><i class="bi bi-lock"></i></span>
+                                            <input type="password" class="form-control" id="reg_pass" name="password" 
+                                                   placeholder="Min. 6 chars" required autocomplete="new-password">
+                                            <button class="btn btn-outline-secondary" type="button" 
+                                                    title="Toggle password visibility"
+                                                    onclick="togglePasswordVisibility('reg_pass', this)">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                     <div class="col-sm-6">
-                                        <label for="reg_confirm" class="form-label fw-semibold small">Confirm <span class="text-danger">*</span></label>
-                                        <input type="password" class="form-control" id="reg_confirm" name="confirm_password" placeholder="Re-enter" required>
+                                        <label for="reg_confirm" class="form-label fw-semibold small">Confirm Password <span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light text-muted"><i class="bi bi-lock-fill"></i></span>
+                                            <input type="password" class="form-control" id="reg_confirm" name="confirm_password" 
+                                                   placeholder="Re-enter" required autocomplete="new-password">
+                                            <button class="btn btn-outline-secondary" type="button" 
+                                                    title="Toggle password visibility"
+                                                    onclick="togglePasswordVisibility('reg_confirm', this)">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <button type="submit" class="btn btn-success w-100 py-2 fw-semibold shadow-sm">
+                                <button type="submit" class="btn btn-success w-100 py-2 py-md-3 fw-semibold shadow-sm fs-6">
                                     <i class="bi bi-person-check-fill me-1"></i> Create Student Account
                                 </button>
+
+                                <div class="text-center mt-4 pt-3 border-top">
+                                    <span class="text-muted small">Already registered?</span>
+                                    <a href="{{ url_for('auth.login') }}" 
+                                       onclick="switchAuthTab(event, 'login-pane', document.getElementById('login-tab'))"
+                                       class="btn btn-sm btn-outline-secondary ms-2 fw-semibold">
+                                        <i class="bi bi-box-arrow-in-right me-1"></i> Sign In to Account
+                                    </a>
+                                </div>
                             </form>
                         </div>
                     </div>
@@ -106,4 +203,61 @@
         </div>
     </div>
 </div>
+
+<script>
+// Show/Hide password toggle function
+function togglePasswordVisibility(fieldId, btn) {
+    const input = document.getElementById(fieldId);
+    if (!input) return;
+    const icon = btn.querySelector('i');
+    if (input.type === 'password') {
+        input.type = 'text';
+        if (icon) {
+            icon.classList.remove('bi-eye');
+            icon.classList.add('bi-eye-slash');
+        }
+    } else {
+        input.type = 'password';
+        if (icon) {
+            icon.classList.remove('bi-eye-slash');
+            icon.classList.add('bi-eye');
+        }
+    }
+}
+
+// Instant client-side tab switching without breaking URL fallback
+function switchAuthTab(event, targetPaneId, clickedTab) {
+    // If user holds Ctrl/Cmd, allow opening new tab normally
+    if (event.ctrlKey || event.metaKey) return;
+    
+    event.preventDefault();
+    
+    const panes = document.querySelectorAll('#authTabsContent .tab-pane');
+    panes.forEach(pane => {
+        pane.classList.remove('show', 'active');
+    });
+    
+    const targetPane = document.getElementById(targetPaneId);
+    if (targetPane) {
+        targetPane.classList.add('show', 'active');
+    }
+    
+    const tabs = document.querySelectorAll('#authTabs .nav-link');
+    tabs.forEach(tab => {
+        tab.classList.remove('active', 'fw-bold', 'shadow-sm');
+        tab.classList.add('text-muted');
+    });
+    
+    if (clickedTab) {
+        clickedTab.classList.add('active', 'fw-bold', 'shadow-sm');
+        clickedTab.classList.remove('text-muted');
+    }
+    
+    // Update browser URL without reload so refresh stays on the right form
+    const newUrl = clickedTab ? clickedTab.getAttribute('href') : null;
+    if (newUrl && window.history && window.history.pushState) {
+        window.history.pushState(null, '', newUrl);
+    }
+}
+</script>
 {% endblock %}

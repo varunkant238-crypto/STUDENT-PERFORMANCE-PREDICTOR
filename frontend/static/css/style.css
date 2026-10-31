@@ -201,12 +201,30 @@ footer a:hover {
     color: #ffffff;
 }
 
-/* Responsive tweaks */
+/* Responsive tweaks & Mobile Touch Optimizations */
 @media (max-width: 768px) {
     .hero-title {
         font-size: 2rem;
     }
     .score-display {
         font-size: 2.75rem;
+    }
+    /* Touch friendly sizes: Prevents iOS Safari auto-zoom (<16px) and misclicks */
+    .form-control, .form-select, .input-group-text {
+        font-size: 16px !important;
+        min-height: 46px;
+    }
+    .btn {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .nav-pills .nav-link {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.95rem;
     }
 }

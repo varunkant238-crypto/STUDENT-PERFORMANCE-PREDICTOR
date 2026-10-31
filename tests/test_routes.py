@@ -99,3 +99,27 @@ def test_authenticated_student_flows(client):
     api_res = client.get('/api/health')
     assert api_res.status_code == 200
     assert api_res.json['status'] == 'healthy'
+
+# Multi-Device & Account Switch Resilience Flow
+def test_cross_device_account_switch_flow(client):
+    # 1. Log in initially as teststudent
+    login_res = client.post('/login', data={'username': 'teststudent', 'password': 'StudentPass123'}, follow_redirects=True)
+    assert login_res.status_code == 200
+    assert b"Test Student" in login_res.data
+
+    # 2. Re-visiting /login must render 200 OK (never block or silently redirect)
+    switch_view_res = client.get('/login')
+    assert switch_view_res.status_code == 200
+    assert b"Sign In to Account" in switch_view_res.data
+    assert b"Active Session Detected" in switch_view_res.data or b"Test Student" in switch_view_res.data
+
+    # 3. Switching accounts by logging in as testadmin seamlessly succeeds
+    switch_login_res = client.post('/login', data={'username': 'testadmin', 'password': 'AdminPass123'}, follow_redirects=True)
+    assert switch_login_res.status_code == 200
+    assert b"Test Admin" in switch_login_res.data
+
+    # 4. Visiting /register while authenticated also renders 200 OK
+    reg_view_res = client.get('/register')
+    assert reg_view_res.status_code == 200
+    assert b"Create Student Account" in reg_view_res.data
+
